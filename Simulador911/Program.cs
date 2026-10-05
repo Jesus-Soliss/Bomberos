@@ -6,6 +6,9 @@ using Microsoft.OpenApi;
 
 const string CabeceraApiKey = "X-Api-Key";
 
+// Nombre de la ventana de consola, para distinguirla al ejecutar los cuatro proyectos a la vez.
+try { Console.Title = "Bomberos - Simulador 911"; } catch (IOException) { /* sin consola */ }
+
 var builder = WebApplication.CreateBuilder(args);
 
 var integracionUrl = builder.Configuration["Integracion:BaseUrl"]

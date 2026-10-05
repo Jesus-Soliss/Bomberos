@@ -4,6 +4,9 @@ using Bomberos.WebApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
+// Nombre de la ventana de consola, para distinguirla al ejecutar los cuatro proyectos a la vez.
+try { Console.Title = "Bomberos - WebApp"; } catch (IOException) { /* sin consola */ }
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews(o =>

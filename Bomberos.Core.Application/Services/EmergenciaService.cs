@@ -9,7 +9,13 @@ using Bomberos.Core.Domain.Enums;
 
 namespace Bomberos.Core.Application.Services;
 
-public class EmergenciaService(IEmergenciaRepository emergencias, IAuditService audit, IMapper mapper) : IEmergenciaService
+public class EmergenciaService(
+    IEmergenciaRepository emergencias,
+    IAsignacionRepository asignaciones,
+    IVehiculoRepository vehiculos,
+    IUnitOfWork unitOfWork,
+    IAuditService audit,
+    IMapper mapper) : IEmergenciaService
 {
     private const string Entidad = nameof(Emergencia);
 
@@ -76,14 +82,44 @@ public class EmergenciaService(IEmergenciaRepository emergencias, IAuditService 
             if (!emergencia.PuedeCambiarA(estado))
                 throw new BusinessException(
                     $"No se puede pasar una emergencia de {emergencia.Estado.ToTexto()} a {estado.ToTexto()}.");
-            // RN-08
-            if (estado == EstadoEmergencia.Finalizada && await emergencias.TieneAsignacionesActivasAsync(id))
-                throw new BusinessException("No se puede finalizar la emergencia mientras tenga asignaciones activas.");
 
             emergencia.Estado = estado;
-            await emergencias.UpdateAsync(emergencia);
+            if (estado == EstadoEmergencia.Finalizada)
+                await FinalizarConAsignacionesAsync(emergencia);
+            else
+                await emergencias.UpdateAsync(emergencia);
             return mapper.Map<EmergenciaDto>(emergencia);
         });
+
+    // RN-08: una emergencia finalizada no conserva asignaciones activas. En lugar de rechazar el cambio,
+    // al finalizarla se finalizan también sus asignaciones activas (RN-09) y los vehículos se liberan (RN-07).
+    private async Task FinalizarConAsignacionesAsync(Emergencia emergencia)
+    {
+        var bomberosActivos = await asignaciones.GetBomberosActivosAsync(emergencia.Id);
+        var vehiculosActivos = await asignaciones.GetVehiculosActivosAsync(emergencia.Id);
+        var ahora = DateTime.UtcNow;
+
+        await unitOfWork.EjecutarEnTransaccionAsync(async () =>
+        {
+            foreach (var asignacion in bomberosActivos)
+            {
+                asignacion.Estado = EstadoAsignacion.Finalizada;
+                asignacion.FechaFinalizacion = ahora;
+                await asignaciones.UpdateBomberoAsync(asignacion);
+            }
+
+            foreach (var asignacion in vehiculosActivos)
+            {
+                asignacion.Estado = EstadoAsignacion.Finalizada;
+                asignacion.FechaFinalizacion = ahora;
+                await asignaciones.UpdateVehiculoAsync(asignacion);
+                asignacion.Vehiculo.Estado = EstadoVehiculo.Disponible;
+                await vehiculos.UpdateAsync(asignacion.Vehiculo);
+            }
+
+            await emergencias.UpdateAsync(emergencia);
+        });
+    }
 
     private async Task<EmergenciaDto> RegistrarAsync(GuardarEmergenciaDto dto, OrigenEmergencia origen, string? referencia)
     {

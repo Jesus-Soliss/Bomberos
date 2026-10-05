@@ -94,7 +94,7 @@
                     <td>@e.Direccion</td>
                     <td>@Html.Estado(e.Prioridad)</td>
                     <td>@Html.Estado(e.Estado)</td>
-                    <td>@Html.Estado(e.Origen) @if (e.ReferenciaExterna is not null) { <div class="small text-muted">@e.ReferenciaExterna</div> }</td>
+                    <td>@Html.Estado(e.Origen)</td>
                     <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="Detalle" asp-route-id="@e.Id">Ver</a></td>
                 </tr>
             }

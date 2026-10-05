@@ -31,7 +31,7 @@ else
                         <dt class="col-sm-3">Dirección</dt><dd class="col-sm-9">@e.Direccion</dd>
                         <dt class="col-sm-3">Descripción</dt><dd class="col-sm-9">@e.Descripcion</dd>
                         <dt class="col-sm-3">Origen</dt>
-                        <dd class="col-sm-9 mb-0">@Html.Estado(e.Origen) @if (e.ReferenciaExterna is not null) { <span class="text-muted">Referencia @e.ReferenciaExterna</span> }</dd>
+                        <dd class="col-sm-9 mb-0">@Html.Estado(e.Origen) @if (e.ReferenciaExterna is not null) { <span class="text-muted">Referencia: @e.ReferenciaExterna</span> }</dd>
                     </dl>
                 </div>
             </div>
@@ -61,11 +61,11 @@ else
                                 </form>
                                 break;
                             case EstadoEmergencia.Controlada:
-                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Finalizar la emergencia? Una emergencia finalizada no puede volver a cambiar de estado.">
+                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Finalizar la emergencia? También se finalizarán las asignaciones que sigan activas, y la emergencia no podrá volver a cambiar de estado.">
                                     <input type="hidden" name="estado" value="@EstadoEmergencia.Finalizada" />
                                     <button type="submit" class="btn btn-success">Finalizar emergencia</button>
                                 </form>
-                                <div class="form-text">Antes de finalizarla, finalice o cancele las asignaciones activas.</div>
+                                <div class="form-text">Los bomberos y vehículos con asignación activa quedarán finalizados y disponibles.</div>
                                 break;
                             default:
                                 <span class="text-muted">La emergencia está cerrada.</span>

@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
+// Nombre de la ventana de consola, para distinguirla al ejecutar los cuatro proyectos a la vez.
+try { Console.Title = "Bomberos - Integration.Api"; } catch (IOException) { /* sin consola */ }
+
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 

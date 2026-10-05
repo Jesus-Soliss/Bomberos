@@ -43,7 +43,15 @@ public class EmergenciasController(
         if (!r.Disponible)
             return StatusCode(StatusCodes.Status503ServiceUnavailable, Respuestas.Error(Respuestas.CoreNoDisponible));
 
-        if (r.Exitoso) await AvisarAl911Async(r.Body);
+        if (r.Exitoso)
+        {
+            await AvisarAl911Async(r.Body);
+            // Al finalizar una emergencia CORE libera sus recursos: la copia local debe reflejarlo.
+            if (cambio.ValueKind == JsonValueKind.Object && cambio.TryGetProperty("estado", out var estado)
+                && estado.ValueKind == JsonValueKind.String && estado.GetString() == "FINALIZADA"
+                && HttpContext.Bearer() is { } bearer)
+                await sync.RefrescarCacheAsync(bearer);
+        }
         return new ContentResult { StatusCode = r.StatusCode, Content = r.Body, ContentType = "application/json" };
     }
 

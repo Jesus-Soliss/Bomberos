@@ -34,10 +34,6 @@ public class EmergenciaRepository(ApplicationContext context) : GenericRepositor
     public Task<bool> ExisteReferenciaAsync(string referenciaExterna)
         => Context.Emergencias.AnyAsync(e => e.ReferenciaExterna == referenciaExterna);
 
-    public async Task<bool> TieneAsignacionesActivasAsync(int emergenciaId)
-        => await Context.AsignacionesBomberos.AnyAsync(a => a.EmergenciaId == emergenciaId && a.Estado == EstadoAsignacion.Activa)
-           || await Context.AsignacionesVehiculos.AnyAsync(a => a.EmergenciaId == emergenciaId && a.Estado == EstadoAsignacion.Activa);
-
     public Task<int> ContarAsync(DateTime? desde = null)
         => Context.Emergencias.CountAsync(e => desde == null || e.FechaHora >= desde);
 
@@ -70,6 +66,16 @@ public class AsignacionRepository(ApplicationContext context) : IAsignacionRepos
 
     public Task<bool> VehiculoTieneAsignacionActivaAsync(int vehiculoId)
         => context.AsignacionesVehiculos.AnyAsync(a => a.VehiculoId == vehiculoId && a.Estado == EstadoAsignacion.Activa);
+
+    public Task<List<AsignacionBombero>> GetBomberosActivosAsync(int emergenciaId)
+        => context.AsignacionesBomberos
+            .Where(a => a.EmergenciaId == emergenciaId && a.Estado == EstadoAsignacion.Activa)
+            .ToListAsync();
+
+    public Task<List<AsignacionVehiculo>> GetVehiculosActivosAsync(int emergenciaId)
+        => context.AsignacionesVehiculos.Include(a => a.Vehiculo)
+            .Where(a => a.EmergenciaId == emergenciaId && a.Estado == EstadoAsignacion.Activa)
+            .ToListAsync();
 
     public async Task AddBomberoAsync(AsignacionBombero asignacion)
     {

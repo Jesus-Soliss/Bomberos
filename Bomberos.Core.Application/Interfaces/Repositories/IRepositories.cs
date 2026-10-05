@@ -52,7 +52,6 @@ public interface IEmergenciaRepository : IGenericRepository<Emergencia>
     Task<Emergencia?> GetDetalleAsync(int id);
     Task<Emergencia?> GetPorReferenciaAsync(string referenciaExterna);
     Task<bool> ExisteReferenciaAsync(string referenciaExterna);
-    Task<bool> TieneAsignacionesActivasAsync(int emergenciaId);
     Task<int> ContarAsync(DateTime? desde = null);
     Task<Dictionary<EstadoEmergencia, int>> ContarPorEstadoAsync();
     Task<Dictionary<OrigenEmergencia, int>> ContarPorOrigenAsync();
@@ -65,6 +64,10 @@ public interface IAsignacionRepository
     Task<AsignacionVehiculo?> GetVehiculoAsync(int emergenciaId, int vehiculoId);
     Task<bool> BomberoTieneAsignacionActivaAsync(int bomberoId);
     Task<bool> VehiculoTieneAsignacionActivaAsync(int vehiculoId);
+    /// <summary>Asignaciones ACTIVAS de bomberos en una emergencia.</summary>
+    Task<List<AsignacionBombero>> GetBomberosActivosAsync(int emergenciaId);
+    /// <summary>Asignaciones ACTIVAS de vehículos en una emergencia, con su vehículo.</summary>
+    Task<List<AsignacionVehiculo>> GetVehiculosActivosAsync(int emergenciaId);
     Task AddBomberoAsync(AsignacionBombero asignacion);
     Task AddVehiculoAsync(AsignacionVehiculo asignacion);
     Task UpdateBomberoAsync(AsignacionBombero asignacion);
