@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Core/">
+    <Project Path="Bomberos.Core.Application/Bomberos.Core.Application.csproj" />
+    <Project Path="Bomberos.Core.Domain/Bomberos.Core.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Bomberos.Infrastructure.Identity/Bomberos.Infrastructure.Identity.csproj" />
+    <Project Path="Bomberos.Infrastructure.Persistance/Bomberos.Infrastructure.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/Presentation/">
+    <Project Path="Bomberos.Integration.Api/Bomberos.Integration.Api.csproj" />
+    <Project Path="Simulador911/Bomberos.Simulador911.csproj" />
+    <Project Path="WebApi/Bomberos.WebApi.csproj" />
+    <Project Path="WebApp/Bomberos.WebApp.csproj" />
+  </Folder>
+</Solution>

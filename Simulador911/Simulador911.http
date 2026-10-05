@@ -1,0 +1,6 @@
+@Simulador911_HostAddress = http://localhost:5115
+
+GET {{Simulador911_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
