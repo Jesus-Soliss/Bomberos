@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Bomberos.Core.Domain.Common;
 
-namespace Bomberos.Core.Domain.Common
+public abstract class AuditableBaseEntity
 {
-    internal class Common
-    {
-    }
+    public DateTime Created { get; set; }
+    public string? CreatedBy { get; set; }
+    public DateTime? LastModified { get; set; }
+    public string? LastModifiedBy { get; set; }
 }
