@@ -1,0 +1,40 @@
+@model VehiculoViewModel
+@{
+    var nuevo = Model.Id == 0;
+    ViewData["Title"] = nuevo ? "Nuevo vehículo" : "Editar vehículo";
+    var estaciones = (List<SelectListItem>)ViewBag.Estaciones;
+}
+
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+
+<form asp-action="@(nuevo ? "Crear" : "Editar")" method="post" class="row g-3" style="max-width: 46rem">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <div class="col-md-4">
+        <label asp-for="Placa" class="form-label"></label>
+        <input asp-for="Placa" class="form-control text-uppercase" />
+        <span asp-validation-for="Placa" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Tipo" class="form-label"></label>
+        <select asp-for="Tipo" asp-items="Formato.Opciones<TipoVehiculo>()" class="form-select">
+            <option value="">Seleccione…</option>
+        </select>
+        <span asp-validation-for="Tipo" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EstacionId" class="form-label"></label>
+        <select asp-for="EstacionId" asp-items="estaciones" class="form-select">
+            <option value="">Seleccione…</option>
+        </select>
+        <span asp-validation-for="EstacionId" class="text-danger small"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-danger">@(nuevo ? "Registrar vehículo" : "Guardar cambios")</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

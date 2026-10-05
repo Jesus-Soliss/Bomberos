@@ -1,0 +1,107 @@
+@model EmergenciasIndexViewModel
+@{
+    ViewData["Title"] = "Emergencias";
+    var f = Model.Filtro;
+    var operar = User.PuedeOperar();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Emergencias</h1>
+    @if (operar)
+    {
+        <a class="btn btn-danger" asp-action="Crear">Registrar emergencia</a>
+    }
+</div>
+
+@if (Model.Contingencia)
+{
+    <div class="card border-warning mb-3">
+        <div class="card-body">
+            <h2 class="h5">Modo contingencia</h2>
+            <p class="mb-2">El listado no está disponible mientras el sistema central no responde.</p>
+            @if (operar)
+            {
+                <p class="mb-2">Puede registrar emergencias nuevas y asignar recursos a una emergencia que ya existía; las operaciones se aplicarán cuando el sistema central se restablezca.</p>
+                <form asp-action="Detalle" method="get" class="row g-2 align-items-end" style="max-width: 26rem">
+                    <div class="col">
+                        <label for="id" class="form-label">N.º de la emergencia</label>
+                        <input type="number" id="id" name="id" min="1" class="form-control" required />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-outline-dark">Asignar recursos</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+    return;
+}
+
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-6 col-md-2">
+        <label for="Estado" class="form-label small mb-1">Estado</label>
+        <select id="Estado" name="Estado" class="form-select form-select-sm">
+            <option value="">Todos</option>
+            @foreach (var e in Enum.GetValues<EstadoEmergencia>()) { <option value="@e" selected="@(f.Estado == e)">@e.Etiqueta()</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="Tipo" class="form-label small mb-1">Tipo</label>
+        <select id="Tipo" name="Tipo" class="form-select form-select-sm">
+            <option value="">Todos</option>
+            @foreach (var e in Enum.GetValues<TipoEmergencia>()) { <option value="@e" selected="@(f.Tipo == e)">@e.Etiqueta()</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="Prioridad" class="form-label small mb-1">Prioridad</label>
+        <select id="Prioridad" name="Prioridad" class="form-select form-select-sm">
+            <option value="">Todas</option>
+            @foreach (var e in Enum.GetValues<PrioridadEmergencia>()) { <option value="@e" selected="@(f.Prioridad == e)">@e.Etiqueta()</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="Origen" class="form-label small mb-1">Origen</label>
+        <select id="Origen" name="Origen" class="form-select form-select-sm">
+            <option value="">Todos</option>
+            @foreach (var e in Enum.GetValues<OrigenEmergencia>()) { <option value="@e" selected="@(f.Origen == e)">@e.Etiqueta()</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-auto">
+        <label for="Desde" class="form-label small mb-1">Desde</label>
+        <input type="date" id="Desde" name="Desde" value="@f.Desde?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+    </div>
+    <div class="col-6 col-md-auto">
+        <label for="Hasta" class="form-label small mb-1">Hasta</label>
+        <input type="date" id="Hasta" name="Hasta" value="@f.Hasta?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+        <a class="btn btn-sm btn-outline-secondary" asp-action="Index">Limpiar</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead><tr><th>N.º</th><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Dirección</th><th>Prioridad</th><th>Estado</th><th>Origen</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var e in Model.Emergencias)
+            {
+                <tr>
+                    <td>@e.Id</td>
+                    <td class="text-nowrap">@e.FechaHora.Fecha()</td>
+                    <td>@e.Tipo.Etiqueta()</td>
+                    <td>@e.Descripcion</td>
+                    <td>@e.Direccion</td>
+                    <td>@Html.Estado(e.Prioridad)</td>
+                    <td>@Html.Estado(e.Estado)</td>
+                    <td>@Html.Estado(e.Origen) @if (e.ReferenciaExterna is not null) { <div class="small text-muted">@e.ReferenciaExterna</div> }</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="Detalle" asp-route-id="@e.Id">Ver</a></td>
+                </tr>
+            }
+            @if (Model.Emergencias.Count == 0)
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No hay emergencias que coincidan con los filtros.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

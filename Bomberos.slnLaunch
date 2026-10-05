@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "Todo el sistema",
+    "Projects": [
+      {
+        "Path": "WebApi\\Bomberos.WebApi.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "Bomberos.Integration.Api\\Bomberos.Integration.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "Simulador911\\Bomberos.Simulador911.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "WebApp\\Bomberos.WebApp.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]

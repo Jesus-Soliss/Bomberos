@@ -1,6 +1,6 @@
 using System.Text;
-using System.Text.Json.Serialization;
 using Bomberos.Core.Application;
+using Bomberos.Core.Application.Common;
 using Bomberos.Core.Application.Interfaces.Services;
 using Bomberos.Core.Domain.Settings;
 using Bomberos.Infrastructure.Identity;
@@ -68,7 +68,7 @@ builder.Services.AddAuthentication(o =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(new EnumTextoNamingPolicy())))
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(ApiJson.EnumConverter()))
     .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ctx =>
     {
         var errores = ctx.ModelState
@@ -104,8 +104,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
-
+// Sin redirección a HTTPS: Integración consume esta API por HTTP en desarrollo.
 app.UseAuthentication();
 app.UseAuthorization();
 

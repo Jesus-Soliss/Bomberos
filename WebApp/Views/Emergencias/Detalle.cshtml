@@ -1,0 +1,205 @@
+@model EmergenciaDetalleViewModel
+@{
+    ViewData["Title"] = $"Emergencia N.º {Model.Id}";
+    var e = Model.Emergencia;
+    var operar = User.PuedeOperar();
+    var admiteAsignaciones = operar && (e is null || e.Estado is EstadoEmergencia.Pendiente or EstadoEmergencia.EnAtencion);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Emergencia N.º @Model.Id @if (e is not null) { @Html.Estado(e.Estado) }</h1>
+    <a class="btn btn-outline-secondary" asp-action="Index">Volver al listado</a>
+</div>
+
+@if (e is null)
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Modo contingencia.</strong> El sistema central no responde, así que no se pueden mostrar los datos de la emergencia.
+        Las asignaciones que haga aquí quedarán pendientes y se aplicarán cuando se restablezca; el sistema central puede rechazarlas si no cumplen las reglas.
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Tipo</dt><dd class="col-sm-9">@e.Tipo.Etiqueta()</dd>
+                        <dt class="col-sm-3">Prioridad</dt><dd class="col-sm-9">@Html.Estado(e.Prioridad)</dd>
+                        <dt class="col-sm-3">Fecha</dt><dd class="col-sm-9">@e.FechaHora.Fecha()</dd>
+                        <dt class="col-sm-3">Dirección</dt><dd class="col-sm-9">@e.Direccion</dd>
+                        <dt class="col-sm-3">Descripción</dt><dd class="col-sm-9">@e.Descripcion</dd>
+                        <dt class="col-sm-3">Origen</dt>
+                        <dd class="col-sm-9 mb-0">@Html.Estado(e.Origen) @if (e.ReferenciaExterna is not null) { <span class="text-muted">Referencia @e.ReferenciaExterna</span> }</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        @if (operar)
+        {
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">Acciones</div>
+                    <div class="card-body d-grid gap-2">
+                        @switch (e.Estado)
+                        {
+                            case EstadoEmergencia.Pendiente:
+                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Pasar la emergencia a en atención?">
+                                    <input type="hidden" name="estado" value="@EstadoEmergencia.EnAtencion" />
+                                    <button type="submit" class="btn btn-primary">Pasar a en atención</button>
+                                </form>
+                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Cancelar la emergencia? Una emergencia cancelada no puede volver a cambiar de estado.">
+                                    <input type="hidden" name="estado" value="@EstadoEmergencia.Cancelada" />
+                                    <button type="submit" class="btn btn-outline-danger">Cancelar emergencia</button>
+                                </form>
+                                break;
+                            case EstadoEmergencia.EnAtencion:
+                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Marcar la emergencia como controlada? Ya no se le podrán asignar más recursos.">
+                                    <input type="hidden" name="estado" value="@EstadoEmergencia.Controlada" />
+                                    <button type="submit" class="btn btn-primary">Marcar como controlada</button>
+                                </form>
+                                break;
+                            case EstadoEmergencia.Controlada:
+                                <form asp-action="CambiarEstado" asp-route-id="@e.Id" method="post" class="d-grid" data-confirm="¿Finalizar la emergencia? Una emergencia finalizada no puede volver a cambiar de estado.">
+                                    <input type="hidden" name="estado" value="@EstadoEmergencia.Finalizada" />
+                                    <button type="submit" class="btn btn-success">Finalizar emergencia</button>
+                                </form>
+                                <div class="form-text">Antes de finalizarla, finalice o cancele las asignaciones activas.</div>
+                                break;
+                            default:
+                                <span class="text-muted">La emergencia está cerrada.</span>
+                                break;
+                        }
+                        @if (e.Estado is not (EstadoEmergencia.Finalizada or EstadoEmergencia.Cancelada))
+                        {
+                            <a class="btn btn-outline-secondary" asp-action="Editar" asp-route-id="@e.Id">Editar datos</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (admiteAsignaciones)
+{
+    @if (Model.DisponiblesDeCopiaLocal && e is not null)
+    {
+        <div class="alert alert-warning" role="alert">La lista de recursos disponibles viene de la copia local de Integración y puede no estar al día.</div>
+    }
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <form asp-action="AsignarBombero" asp-route-id="@Model.Id" method="post" class="card card-body">
+                <label for="bomberoId" class="form-label fw-semibold">Asignar bombero</label>
+                <div class="d-flex gap-2">
+                    <select id="bomberoId" name="bomberoId" class="form-select" required disabled="@(Model.BomberosDisponibles.Count == 0)">
+                        <option value="">@(Model.BomberosDisponibles.Count == 0 ? "No hay bomberos disponibles" : "Seleccione…")</option>
+                        @foreach (var b in Model.BomberosDisponibles) { <option value="@b.Id">@b.Descripcion</option> }
+                    </select>
+                    <button type="submit" class="btn btn-danger" disabled="@(Model.BomberosDisponibles.Count == 0)">Asignar</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <form asp-action="AsignarVehiculo" asp-route-id="@Model.Id" method="post" class="card card-body">
+                <label for="vehiculoId" class="form-label fw-semibold">Asignar vehículo</label>
+                <div class="d-flex gap-2">
+                    <select id="vehiculoId" name="vehiculoId" class="form-select" required disabled="@(Model.VehiculosDisponibles.Count == 0)">
+                        <option value="">@(Model.VehiculosDisponibles.Count == 0 ? "No hay vehículos disponibles" : "Seleccione…")</option>
+                        @foreach (var v in Model.VehiculosDisponibles) { <option value="@v.Id">@v.Descripcion</option> }
+                    </select>
+                    <button type="submit" class="btn btn-danger" disabled="@(Model.VehiculosDisponibles.Count == 0)">Asignar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (e is not null)
+{
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Bomberos asignados</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Bombero</th><th>Asignado</th><th>Finalizado</th><th>Estado</th>@if (operar) { <th></th> }</tr></thead>
+                        <tbody>
+                            @foreach (var a in e.Bomberos)
+                            {
+                                <tr>
+                                    <td>@a.BomberoNombre <div class="small text-muted">@a.Rango.Etiqueta()</div></td>
+                                    <td class="text-nowrap">@a.FechaAsignacion.Fecha()</td>
+                                    <td class="text-nowrap">@a.FechaFinalizacion.Fecha()</td>
+                                    <td>@Html.Estado(a.Estado)</td>
+                                    @if (operar)
+                                    {
+                                        <td class="text-end text-nowrap">
+                                            @if (a.Estado == EstadoAsignacion.Activa)
+                                            {
+                                                <form asp-action="CerrarAsignacion" asp-route-id="@e.Id" method="post" class="d-inline" data-confirm="¿Finalizar la asignación de @a.BomberoNombre?">
+                                                    <input type="hidden" name="recurso" value="bomberos" /><input type="hidden" name="recursoId" value="@a.BomberoId" /><input type="hidden" name="accion" value="finalizar" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">Finalizar</button>
+                                                </form>
+                                                <form asp-action="CerrarAsignacion" asp-route-id="@e.Id" method="post" class="d-inline" data-confirm="¿Cancelar la asignación de @a.BomberoNombre?">
+                                                    <input type="hidden" name="recurso" value="bomberos" /><input type="hidden" name="recursoId" value="@a.BomberoId" /><input type="hidden" name="accion" value="cancelar" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            @if (e.Bomberos.Count == 0)
+                            {
+                                <tr><td colspan="5" class="text-center text-muted py-3">Sin bomberos asignados.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Vehículos asignados</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Vehículo</th><th>Asignado</th><th>Finalizado</th><th>Estado</th>@if (operar) { <th></th> }</tr></thead>
+                        <tbody>
+                            @foreach (var a in e.Vehiculos)
+                            {
+                                <tr>
+                                    <td>@a.Placa <div class="small text-muted">@a.TipoVehiculo.Etiqueta()</div></td>
+                                    <td class="text-nowrap">@a.FechaAsignacion.Fecha()</td>
+                                    <td class="text-nowrap">@a.FechaFinalizacion.Fecha()</td>
+                                    <td>@Html.Estado(a.Estado)</td>
+                                    @if (operar)
+                                    {
+                                        <td class="text-end text-nowrap">
+                                            @if (a.Estado == EstadoAsignacion.Activa)
+                                            {
+                                                <form asp-action="CerrarAsignacion" asp-route-id="@e.Id" method="post" class="d-inline" data-confirm="¿Finalizar la asignación del vehículo @a.Placa? Volverá a estar disponible.">
+                                                    <input type="hidden" name="recurso" value="vehiculos" /><input type="hidden" name="recursoId" value="@a.VehiculoId" /><input type="hidden" name="accion" value="finalizar" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">Finalizar</button>
+                                                </form>
+                                                <form asp-action="CerrarAsignacion" asp-route-id="@e.Id" method="post" class="d-inline" data-confirm="¿Cancelar la asignación del vehículo @a.Placa? Volverá a estar disponible.">
+                                                    <input type="hidden" name="recurso" value="vehiculos" /><input type="hidden" name="recursoId" value="@a.VehiculoId" /><input type="hidden" name="accion" value="cancelar" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            @if (e.Vehiculos.Count == 0)
+                            {
+                                <tr><td colspan="5" class="text-center text-muted py-3">Sin vehículos asignados.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}

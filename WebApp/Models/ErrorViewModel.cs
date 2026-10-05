@@ -1,4 +1,4 @@
-namespace WebApp.Models
+namespace Bomberos.WebApp.Models
 {
     public class ErrorViewModel
     {

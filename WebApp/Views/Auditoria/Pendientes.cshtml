@@ -1,0 +1,42 @@
+@model List<OperacionPendienteViewModel>
+@{
+    ViewData["Title"] = "Operaciones pendientes";
+    var usuarios = (Dictionary<string, string>)ViewBag.Usuarios;
+    var estado = (string?)ViewBag.Estado;
+}
+
+<h1 class="h3 mb-1">Operaciones pendientes</h1>
+<p class="text-muted">Operaciones que Integración recibió mientras el sistema central no respondía. Al restablecerse se reenvían en orden: quedan aplicadas, o rechazadas con el motivo que devolvió el sistema central.</p>
+
+<div class="btn-group mb-3" role="group" aria-label="Filtrar por estado">
+    @foreach (var (valor, texto) in new[] { ("", "Todas"), ("PENDIENTE", "Pendientes"), ("APLICADA", "Aplicadas"), ("RECHAZADA", "Rechazadas") })
+    {
+        <a class="btn btn-sm @((estado ?? "") == valor ? "btn-primary" : "btn-outline-primary")" asp-action="Pendientes" asp-route-estado="@valor">@texto</a>
+    }
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead><tr><th>N.º</th><th>Recibida</th><th>Usuario</th><th>Operación</th><th>Endpoint</th><th>Estado</th><th>Reintentos</th><th>Aplicada</th><th>Motivo</th></tr></thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td class="text-nowrap">@p.FechaHora.Fecha()</td>
+                    <td>@(p.UsuarioId is null ? "Centro 911" : usuarios.GetValueOrDefault(p.UsuarioId, p.UsuarioId))</td>
+                    <td>@Formato.Etiqueta(p.Tipo)</td>
+                    <td class="text-break small">@p.Metodo @p.Endpoint</td>
+                    <td>@Html.Estado(p.Estado)</td>
+                    <td>@p.Reintentos</td>
+                    <td class="text-nowrap">@p.FechaAplicacion.Fecha()</td>
+                    <td>@(p.Motivo ?? "—")</td>
+                </tr>
+            }
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No hay operaciones para mostrar.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

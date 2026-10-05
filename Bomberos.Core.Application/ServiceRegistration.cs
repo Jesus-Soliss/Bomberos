@@ -10,10 +10,7 @@ public static class ServiceRegistration
     /// <param name="autoMapperLicenseKey">Clave de licencia de AutoMapper (opcional; hay una gratuita de comunidad).</param>
     public static void AddApplicationLayer(this IServiceCollection services, string? autoMapperLicenseKey = null)
     {
-        services.AddAutoMapper(cfg =>
-        {
-            if (!string.IsNullOrWhiteSpace(autoMapperLicenseKey)) cfg.LicenseKey = autoMapperLicenseKey;
-        }, Assembly.GetExecutingAssembly());
+        services.AddApplicationMappings(autoMapperLicenseKey);
 
         services.AddScoped<IEstacionService, EstacionService>();
         services.AddScoped<IBomberoService, BomberoService>();
@@ -21,5 +18,14 @@ public static class ServiceRegistration
         services.AddScoped<IEmergenciaService, EmergenciaService>();
         services.AddScoped<IAsignacionService, AsignacionService>();
         services.AddScoped<IConsultaService, ConsultaService>();
+    }
+
+    /// <summary>Solo AutoMapper con los perfiles de esta capa. Es lo único que necesita la WebApp.</summary>
+    public static void AddApplicationMappings(this IServiceCollection services, string? autoMapperLicenseKey = null)
+    {
+        services.AddAutoMapper(cfg =>
+        {
+            if (!string.IsNullOrWhiteSpace(autoMapperLicenseKey)) cfg.LicenseKey = autoMapperLicenseKey;
+        }, Assembly.GetExecutingAssembly());
     }
 }

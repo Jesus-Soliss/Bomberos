@@ -1,6 +1,28 @@
-@Bomberos.Integration.Api_HostAddress = http://localhost:5055
+@Integracion = http://localhost:5055
 
-GET {{Bomberos.Integration.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Login (se reenvía a CORE)
+# @name login
+POST {{Integracion}}/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "operador", "password": "Operador123*" }
+
+###
+@token = {{login.response.body.token}}
+
+### Paso directo a CORE
+GET {{Integracion}}/api/v1/emergencias
+Authorization: Bearer {{token}}
+
+### Disponibilidad (usa la copia local si CORE está caído)
+GET {{Integracion}}/api/v1/bomberos/disponibles
+Authorization: Bearer {{token}}
+
+### Reporte del Centro 911
+POST {{Integracion}}/integration/911/emergencias
+Content-Type: application/json
+X-Api-Key: clave-secreta-911
+
+{ "referencia": "911-0001", "tipo": "INCENDIO", "descripcion": "Fuego en vivienda", "direccion": "Calle 1", "prioridad": "ALTA" }
 
 ###

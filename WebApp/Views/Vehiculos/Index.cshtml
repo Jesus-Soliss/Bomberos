@@ -1,0 +1,63 @@
+@model List<VehiculoDto>
+@{
+    ViewData["Title"] = "Vehículos";
+    var admin = User.EsAdministrador();
+    var operar = User.PuedeOperar();
+    // EN_SERVICIO lo controlan las asignaciones; a mano solo se elige entre estos tres.
+    var estadosManuales = new[] { EstadoVehiculo.Disponible, EstadoVehiculo.Mantenimiento, EstadoVehiculo.FueraDeServicio };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Vehículos</h1>
+    @if (admin)
+    {
+        <a class="btn btn-danger" asp-action="Crear">Nuevo vehículo</a>
+    }
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead><tr><th>Placa</th><th>Tipo</th><th>Estación</th><th>Estado</th>@if (operar) { <th>Actualizar estado</th> }@if (admin) { <th class="text-end">Acciones</th> }</tr></thead>
+        <tbody>
+            @foreach (var v in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@v.Placa</td>
+                    <td>@v.Tipo.Etiqueta()</td>
+                    <td>@v.EstacionNombre</td>
+                    <td>@Html.Estado(v.Estado)</td>
+                    @if (operar)
+                    {
+                        <td>
+                            @if (v.Estado == EstadoVehiculo.EnServicio)
+                            {
+                                <span class="text-muted small">Asignado a una emergencia</span>
+                            }
+                            else
+                            {
+                                <form asp-action="CambiarEstado" asp-route-id="@v.Id" method="post" class="d-flex gap-1"
+                                      data-confirm="¿Cambiar el estado del vehículo @v.Placa?">
+                                    <select name="estado" class="form-select form-select-sm" aria-label="Estado de @v.Placa">
+                                        @foreach (var e in estadosManuales)
+                                        {
+                                            <option value="@e" selected="@(e == v.Estado)">@e.Etiqueta()</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Cambiar</button>
+                                </form>
+                            }
+                        </td>
+                    }
+                    @if (admin)
+                    {
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="Editar" asp-route-id="@v.Id">Editar</a></td>
+                    }
+                </tr>
+            }
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">No hay vehículos para mostrar.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

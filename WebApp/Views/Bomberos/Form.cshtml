@@ -1,0 +1,50 @@
+@model BomberoViewModel
+@{
+    var nuevo = Model.Id == 0;
+    ViewData["Title"] = nuevo ? "Nuevo bombero" : "Editar bombero";
+    var estaciones = (List<SelectListItem>)ViewBag.Estaciones;
+}
+
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+
+<form asp-action="@(nuevo ? "Crear" : "Editar")" method="post" class="row g-3" style="max-width: 46rem">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <div class="col-md-6">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Apellido" class="form-label"></label>
+        <input asp-for="Apellido" class="form-control" />
+        <span asp-validation-for="Apellido" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Cedula" class="form-label"></label>
+        <input asp-for="Cedula" class="form-control" placeholder="000-0000000-0" />
+        <span asp-validation-for="Cedula" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Rango" class="form-label"></label>
+        <select asp-for="Rango" asp-items="Formato.Opciones<RangoBombero>()" class="form-select">
+            <option value="">Seleccione…</option>
+        </select>
+        <span asp-validation-for="Rango" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EstacionId" class="form-label"></label>
+        <select asp-for="EstacionId" asp-items="estaciones" class="form-select">
+            <option value="">Seleccione…</option>
+        </select>
+        <span asp-validation-for="EstacionId" class="text-danger small"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-danger">@(nuevo ? "Registrar bombero" : "Guardar cambios")</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

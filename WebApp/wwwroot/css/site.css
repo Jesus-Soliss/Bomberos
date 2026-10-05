@@ -29,3 +29,26 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.navbar-bomberos {
+  background-color: #9b1c1c;
+}
+
+.indicador {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.log-cuerpo {
+  max-width: 28rem;
+  max-height: 6rem;
+  overflow: auto;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

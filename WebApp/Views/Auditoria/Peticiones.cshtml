@@ -1,0 +1,36 @@
+@model List<RequestLogDto>
+@{
+    ViewData["Title"] = "Log de peticiones";
+    ViewData["EtiquetaAccion"] = "Endpoint contiene";
+    var usuarios = (Dictionary<string, string>)ViewBag.Usuarios;
+}
+
+<h1 class="h3 mb-1">Log de peticiones</h1>
+<p class="text-muted">Peticiones recibidas por el sistema central y sus respuestas. Las contraseñas y los tokens nunca se guardan. Se muestran las 300 más recientes que cumplen el filtro.</p>
+
+<partial name="_Filtro" model="(LogFiltroViewModel)ViewBag.Filtro" />
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead><tr><th>Fecha</th><th>Usuario</th><th>Método</th><th>Endpoint</th><th>Código</th><th>ms</th><th>Petición</th><th>Respuesta</th></tr></thead>
+        <tbody>
+            @foreach (var l in Model)
+            {
+                <tr>
+                    <td class="text-nowrap">@l.FechaHora.Fecha()</td>
+                    <td>@(l.UsuarioId is null ? "—" : usuarios.GetValueOrDefault(l.UsuarioId, l.UsuarioId))</td>
+                    <td>@l.Metodo</td>
+                    <td class="text-break">@l.Endpoint</td>
+                    <td><span class="badge @(l.CodigoRespuesta < 400 ? "bg-success" : l.CodigoRespuesta < 500 ? "bg-warning text-dark" : "bg-danger")">@l.CodigoRespuesta</span></td>
+                    <td>@l.DuracionMs</td>
+                    <td><div class="log-cuerpo">@(l.Peticion ?? "—")</div></td>
+                    <td><div class="log-cuerpo">@(l.Respuesta ?? "—")</div></td>
+                </tr>
+            }
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="8" class="text-center text-muted py-4">No hay registros que coincidan con los filtros.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,6 +1,15 @@
-@Simulador911_HostAddress = http://localhost:5115
+@Simulador911 = http://localhost:5115
 
-GET {{Simulador911_HostAddress}}/weatherforecast/
-Accept: application/json
+### Reporta una emergencia a Integración
+POST {{Simulador911}}/enviar-reporte
+Content-Type: application/json
+
+{ "referencia": "911-0001", "tipo": "INCENDIO", "descripcion": "Fuego en vivienda", "direccion": "Calle 1", "prioridad": "ALTA" }
+
+### Estado de la emergencia reportada
+GET {{Simulador911}}/consultar-estado/911-0001
+
+### Avisos de cambio de estado recibidos
+GET {{Simulador911}}/api/notificaciones
 
 ###

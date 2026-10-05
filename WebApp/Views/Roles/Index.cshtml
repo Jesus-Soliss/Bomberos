@@ -1,0 +1,47 @@
+@model List<RolDto>
+@{
+    ViewData["Title"] = "Perfiles";
+}
+
+<h1 class="h3 mb-3">Perfiles</h1>
+<p class="text-muted">Los perfiles son los roles del sistema. Para asignar un perfil a un usuario use la pantalla de <a asp-controller="Usuarios" asp-action="Index">usuarios</a>.</p>
+
+<form asp-action="Crear" method="post" class="row g-2 align-items-end mb-4" style="max-width: 32rem">
+    <div class="col">
+        <label for="Nombre" class="form-label">Nuevo perfil</label>
+        <input type="text" id="Nombre" name="Nombre" class="form-control" maxlength="50" required placeholder="Nombre del perfil" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-danger">Crear</button>
+    </div>
+</form>
+
+<div class="table-responsive" style="max-width: 46rem">
+    <table class="table table-hover">
+        <thead><tr><th>Perfil</th><th>Usuarios asignados</th><th class="text-end">Acciones</th></tr></thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                var esBase = Roles.Base.Contains(r.Nombre);
+                <tr>
+                    <td class="fw-semibold">@Formato.Etiqueta(r.Nombre) @if (esBase) { <span class="badge bg-secondary">base</span> }</td>
+                    <td>@r.Usuarios</td>
+                    <td class="text-end text-nowrap">
+                        @if (esBase)
+                        {
+                            <span class="text-muted small">Perfil del sistema</span>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Editar" asp-route-id="@r.Id">Editar</a>
+                            <form asp-action="Eliminar" asp-route-id="@r.Id" method="post" class="d-inline"
+                                  data-confirm="¿Eliminar el perfil @r.Nombre? Esta acción no se puede deshacer.">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

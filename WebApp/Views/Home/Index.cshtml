@@ -1,8 +1,106 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model DashboardDto?
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Dashboard</h1>
+    @if (User.PuedeOperar())
+    {
+        <a class="btn btn-danger" asp-controller="Emergencias" asp-action="Crear">Registrar emergencia</a>
+    }
+</div>
+
+@if (Model is null)
+{
+    <p class="text-muted">Los indicadores no están disponibles en este momento.</p>
+    @if (User.PuedeOperar())
+    {
+        <p>Puede seguir <a asp-controller="Emergencias" asp-action="Index">registrando emergencias y asignando recursos</a>; las operaciones se aplicarán cuando el sistema central se restablezca.</p>
+    }
+    return;
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Emergencias totales</div>
+            <div class="indicador">@Model.TotalEmergencias</div>
+            <div class="small">@Model.EmergenciasHoy registradas hoy</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Bomberos disponibles</div>
+            <div class="indicador text-success">@Model.BomberosDisponibles</div>
+            <div class="small">@Model.BomberosEnServicio en servicio</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Vehículos disponibles</div>
+            <div class="indicador text-success">@Model.VehiculosDisponibles</div>
+            <div class="small">@Model.VehiculosEnServicio en servicio</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Vehículos en mantenimiento</div>
+            <div class="indicador text-warning">@Model.VehiculosEnMantenimiento</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header">Emergencias por estado</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var (estado, total) in Model.EmergenciasPorEstado)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @Html.Estado(estado) <span class="fw-semibold">@total</span>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="card">
+            <div class="card-header">Emergencias por origen</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var (origen, total) in Model.EmergenciasPorOrigen)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @Html.Estado(origen) <span class="fw-semibold">@total</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">Últimas emergencias registradas</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead><tr><th>N.º</th><th>Fecha</th><th>Tipo</th><th>Dirección</th><th>Prioridad</th><th>Estado</th></tr></thead>
+                    <tbody>
+                        @foreach (var e in Model.UltimasEmergencias)
+                        {
+                            <tr>
+                                <td><a asp-controller="Emergencias" asp-action="Detalle" asp-route-id="@e.Id">@e.Id</a></td>
+                                <td class="text-nowrap">@e.FechaHora.Fecha()</td>
+                                <td>@e.Tipo.Etiqueta()</td>
+                                <td>@e.Direccion</td>
+                                <td>@Html.Estado(e.Prioridad)</td>
+                                <td>@Html.Estado(e.Estado)</td>
+                            </tr>
+                        }
+                        @if (Model.UltimasEmergencias.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-center text-muted py-3">Todavía no hay emergencias registradas.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

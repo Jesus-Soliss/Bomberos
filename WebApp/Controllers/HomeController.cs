@@ -1,25 +1,26 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using WebApp.Models;
+using Bomberos.Core.Application.DTOs.Consultas;
+using Bomberos.WebApp.Infrastructure;
+using Bomberos.WebApp.Models;
+using Bomberos.WebApp.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace WebApp.Controllers
+namespace Bomberos.WebApp.Controllers;
+
+[Authorize]
+public class HomeController(IntegracionApi api) : AppController
 {
-    public class HomeController : Controller
+    /// <summary>Dashboard: el mismo para los tres roles; el menú cambia según el perfil.</summary>
+    public async Task<IActionResult> Index()
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        var r = await api.GetAsync<DashboardDto>("api/v1/dashboard");
+        if (!r.Ok) ViewData["Error"] = r.Message;
+        return View(r.Data);
     }
+
+    [AllowAnonymous]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+        => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 }

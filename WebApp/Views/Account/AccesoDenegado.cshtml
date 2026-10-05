@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Acceso denegado";
+}
+
+<div class="text-center py-5">
+    <h1 class="h3 text-danger">Acceso denegado</h1>
+    <p class="mb-4">Su perfil (@Formato.Etiqueta(User.RolPrincipal())) no tiene permiso para acceder a esta sección.</p>
+    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Ir a mi inicio</a>
+</div>
