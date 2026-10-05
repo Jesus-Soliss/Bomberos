@@ -15,7 +15,11 @@ public static class ApiJson
     /// <summary>Opciones con las que la WebApi escribe su JSON; la WebApp las usa para leerlo.</summary>
     public static readonly JsonSerializerOptions Options = Crear();
 
-    public static JsonStringEnumConverter EnumConverter() => new(new EnumTextoNamingPolicy());
+    /// <summary>
+    /// Solo acepta los textos definidos (BAJA, MEDIA, ...). Un número, o un número escrito como texto ("4"),
+    /// se rechaza: de lo contrario se guardaría un valor que no existe en el enum.
+    /// </summary>
+    public static JsonStringEnumConverter EnumConverter() => new(new EnumTextoNamingPolicy(), allowIntegerValues: false);
 
     private static JsonSerializerOptions Crear()
     {

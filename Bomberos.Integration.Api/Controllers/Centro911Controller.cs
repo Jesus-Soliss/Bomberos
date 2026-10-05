@@ -32,14 +32,14 @@ public class Centro911Controller(
     [HttpPost]
     public async Task<IActionResult> Reportar([FromBody] Reporte911 reporte)
     {
-        var faltantes = new[]
-        {
-            (nameof(reporte.Referencia), reporte.Referencia), (nameof(reporte.Tipo), reporte.Tipo),
-            (nameof(reporte.Descripcion), reporte.Descripcion), (nameof(reporte.Direccion), reporte.Direccion),
-            (nameof(reporte.Prioridad), reporte.Prioridad)
-        }.Where(c => string.IsNullOrWhiteSpace(c.Item2)).Select(c => c.Item1.ToLowerInvariant()).ToList();
-        if (faltantes.Count > 0)
-            return BadRequest(Respuestas.Error($"Faltan campos requeridos: {string.Join(", ", faltantes)}."));
+        // Formato: nada que CORE fuera a rechazar siempre debe llegar a CORE ni quedar en la cola de pendientes.
+        var errores = ValidadorEmergencia.Validar(reporte.Tipo, reporte.Prioridad, reporte.Descripcion, reporte.Direccion);
+        ValidadorEmergencia.ValidarReferencia(errores, reporte.Referencia);
+        if (errores.Count > 0)
+            return BadRequest(new { success = false, message = string.Join(" ", errores), errors = errores });
+
+        reporte = new Reporte911(reporte.Referencia!.Trim(), reporte.Tipo!.Trim().ToUpperInvariant(),
+            reporte.Descripcion!.Trim(), reporte.Direccion!.Trim(), reporte.Prioridad!.Trim().ToUpperInvariant());
 
         var json = JsonSerializer.Serialize(reporte, JsonSerializerOptions.Web);
         var login = await sync.LoginServicioAsync();     // cuenta de servicio

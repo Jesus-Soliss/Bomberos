@@ -24,7 +24,8 @@ public class EmergenciaDetalleDto : EmergenciaDto
 
 public class GuardarEmergenciaDto
 {
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(TipoEmergencia), ErrorMessage = "El valor del campo {0} no es válido.")]
     public TipoEmergencia? Tipo { get; set; }
 
     [Required, StringLength(500)]
@@ -33,7 +34,8 @@ public class GuardarEmergenciaDto
     [Required, StringLength(200)]
     public string Direccion { get; set; } = "";
 
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(PrioridadEmergencia), ErrorMessage = "El valor del campo {0} no es válido.")]
     public PrioridadEmergencia? Prioridad { get; set; }
 }
 
@@ -46,7 +48,8 @@ public class ReporteExternoDto : GuardarEmergenciaDto
 
 public class CambiarEstadoEmergenciaDto
 {
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(EstadoEmergencia), ErrorMessage = "El valor del campo {0} no es válido.")]
     public EstadoEmergencia? Estado { get; set; }
 }
 

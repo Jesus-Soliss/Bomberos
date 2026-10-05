@@ -11,6 +11,12 @@ public static class EnumTexto
     public static string ToTexto<TEnum>(this TEnum valor) where TEnum : struct, Enum
         => Convertir(valor.ToString());
 
+    /// <summary>Texto para guardar en la base de datos. Falla si el valor no está definido en el enum.</summary>
+    public static string ToTextoValido<TEnum>(TEnum valor) where TEnum : struct, Enum
+        => Enum.IsDefined(valor)
+            ? Convertir(valor.ToString())
+            : throw new ArgumentOutOfRangeException(nameof(valor), valor, $"Valor no definido en {typeof(TEnum).Name}.");
+
     public static string Convertir(string nombre)
     {
         var sb = new StringBuilder(nombre.Length + 4);

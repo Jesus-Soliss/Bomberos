@@ -37,6 +37,18 @@ var avisos = new ConcurrentQueue<AvisoEstado>();
 // Envía un reporte a Integración (se prueba desde Swagger).
 app.MapPost("/enviar-reporte", async (ReporteRequest rep, IHttpClientFactory f) =>
 {
+    var errores = Validar(rep);
+    if (errores.Count > 0)
+        return Results.Json(new { success = false, message = string.Join(" ", errores), errors = errores },
+            statusCode: StatusCodes.Status400BadRequest);
+
+    rep = rep with
+    {
+        Referencia = rep.Referencia.Trim(), Tipo = rep.Tipo.Trim().ToUpperInvariant(),
+        Descripcion = rep.Descripcion.Trim(), Direccion = rep.Direccion.Trim(),
+        Prioridad = rep.Prioridad.Trim().ToUpperInvariant()
+    };
+
     try
     {
         var http = f.CreateClient("integracion");
@@ -82,6 +94,36 @@ app.MapGet("/api/notificaciones", () => avisos.Reverse())
     .WithSummary("Avisos de cambio de estado recibidos, del más reciente al más antiguo");
 
 app.Run();
+
+// El simulador valida su propio reporte antes de enviarlo, como lo haría la institución real.
+static List<string> Validar(ReporteRequest rep)
+{
+    string[] tipos = ["INCENDIO", "ACCIDENTE", "RESCATE", "INCIDENTE_PELIGROSO", "OTRO"];
+    string[] prioridades = ["BAJA", "MEDIA", "ALTA", "CRITICA"];
+    var errores = new List<string>();
+
+    void Texto(string campo, string? valor, int maximo)
+    {
+        if (string.IsNullOrWhiteSpace(valor)) errores.Add($"{campo} es requerida.");
+        else if (valor.Trim().Length > maximo) errores.Add($"{campo} admite un máximo de {maximo} caracteres.");
+    }
+
+    Texto("La referencia", rep.Referencia, 50);
+    if (!string.IsNullOrWhiteSpace(rep.Referencia) && rep.Referencia.Trim().Any(c => char.IsWhiteSpace(c) || c is '/' or '\\' or '?' or '#' or '%'))
+        errores.Add("La referencia no admite espacios ni los caracteres / \\ ? # %.");
+
+    if (string.IsNullOrWhiteSpace(rep.Tipo)) errores.Add("El tipo es requerido.");
+    else if (!tipos.Contains(rep.Tipo.Trim(), StringComparer.OrdinalIgnoreCase))
+        errores.Add($"El tipo '{rep.Tipo}' no es válido. Valores permitidos: {string.Join(", ", tipos)}.");
+
+    if (string.IsNullOrWhiteSpace(rep.Prioridad)) errores.Add("La prioridad es requerida.");
+    else if (!prioridades.Contains(rep.Prioridad.Trim(), StringComparer.OrdinalIgnoreCase))
+        errores.Add($"La prioridad '{rep.Prioridad}' no es válida. Valores permitidos: {string.Join(", ", prioridades)}.");
+
+    Texto("La descripción", rep.Descripcion, 500);
+    Texto("La dirección", rep.Direccion, 200);
+    return errores;
+}
 
 public record ReporteRequest(string Referencia, string Tipo, string Descripcion, string Direccion, string Prioridad);
 public record AvisoEstado(string Referencia, string Estado, DateTime Fecha);

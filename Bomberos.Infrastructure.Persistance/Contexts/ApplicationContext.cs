@@ -161,7 +161,7 @@ internal static class PropertyBuilderExtensions
         where TEnum : struct, Enum
         => property
             .HasConversion(new ValueConverter<TEnum, string>(
-                v => Core.Domain.Common.EnumTexto.Convertir(v.ToString()),
+                v => Core.Domain.Common.EnumTexto.ToTextoValido(v),
                 s => Core.Domain.Common.EnumTexto.Parse<TEnum>(s)))
             .HasMaxLength(longitud)
             .IsUnicode(false);

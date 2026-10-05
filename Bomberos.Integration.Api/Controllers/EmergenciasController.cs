@@ -25,11 +25,22 @@ public class EmergenciasController(
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] JsonElement emergencia)
     {
-        if (CamposFaltantes(emergencia, "tipo", "descripcion", "direccion", "prioridad") is { } faltantes)
-            return BadRequest(Respuestas.Error($"Faltan campos requeridos: {faltantes}."));
+        // Solo se reenvían (o encolan) los cuatro campos conocidos, ya validados y normalizados.
+        string? tipo = Texto(emergencia, "tipo"), prioridad = Texto(emergencia, "prioridad"),
+            descripcion = Texto(emergencia, "descripcion"), direccion = Texto(emergencia, "direccion");
+        var errores = ValidadorEmergencia.Validar(tipo, prioridad, descripcion, direccion);
+        if (errores.Count > 0)
+            return BadRequest(new { success = false, message = string.Join(" ", errores), errors = errores });
 
+        var json = JsonSerializer.Serialize(new
+        {
+            tipo = tipo!.Trim().ToUpperInvariant(),
+            descripcion = descripcion!.Trim(),
+            direccion = direccion!.Trim(),
+            prioridad = prioridad!.Trim().ToUpperInvariant()
+        });
         var r = await operaciones.EjecutarOEncolarAsync(HttpContext, TiposOperacion.CrearEmergencia, HttpMethod.Post,
-            "api/v1/emergencias", emergencia.GetRawText(), referenciaProvisional: NuevaReferencia());
+            "api/v1/emergencias", json, referenciaProvisional: NuevaReferencia());
         return r.Respuesta;
     }
 
@@ -113,14 +124,18 @@ public class EmergenciasController(
 
     internal static string NuevaReferencia() => $"PROV-{Guid.NewGuid():N}"[..17].ToUpperInvariant();
 
-    internal static string? CamposFaltantes(JsonElement body, params string[] campos)
+    /// <summary>Valor de una propiedad de texto; un número u otro tipo se devuelve tal cual para que la validación lo rechace.</summary>
+    private static string? Texto(JsonElement body, string campo)
     {
-        if (body.ValueKind != JsonValueKind.Object) return string.Join(", ", campos);
-        var faltantes = campos.Where(c =>
-            !body.TryGetProperty(c, out var v)
-            || v.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
-            || (v.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(v.GetString()))).ToList();
-        return faltantes.Count == 0 ? null : string.Join(", ", faltantes);
+        if (body.ValueKind != JsonValueKind.Object) return null;
+        var propiedad = body.EnumerateObject()
+            .FirstOrDefault(p => string.Equals(p.Name, campo, StringComparison.OrdinalIgnoreCase));
+        return propiedad.Value.ValueKind switch
+        {
+            JsonValueKind.String => propiedad.Value.GetString(),
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            _ => propiedad.Value.GetRawText()
+        };
     }
 
     private static bool TryGetId(JsonElement body, string campo, out int id)

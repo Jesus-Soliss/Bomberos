@@ -28,7 +28,8 @@ public class GuardarEstacionDto
 
 public class CambiarEstadoEstacionDto
 {
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(EstadoEstacion), ErrorMessage = "El valor del campo {0} no es válido.")]
     public EstadoEstacion? Estado { get; set; }
 }
 
@@ -59,7 +60,8 @@ public class GuardarBomberoDto
     [Required, StringLength(15)]
     public string Cedula { get; set; } = "";
 
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(RangoBombero), ErrorMessage = "El valor del campo {0} no es válido.")]
     public RangoBombero? Rango { get; set; }
 
     [Range(1, int.MaxValue, ErrorMessage = "La estación es requerida.")]
@@ -68,7 +70,8 @@ public class GuardarBomberoDto
 
 public class CambiarEstadoBomberoDto
 {
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(EstadoBombero), ErrorMessage = "El valor del campo {0} no es válido.")]
     public EstadoBombero? Estado { get; set; }
 }
 
@@ -89,7 +92,8 @@ public class GuardarVehiculoDto
     [Required, StringLength(10)]
     public string Placa { get; set; } = "";
 
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(TipoVehiculo), ErrorMessage = "El valor del campo {0} no es válido.")]
     public TipoVehiculo? Tipo { get; set; }
 
     [Range(1, int.MaxValue, ErrorMessage = "La estación es requerida.")]
@@ -98,6 +102,7 @@ public class GuardarVehiculoDto
 
 public class CambiarEstadoVehiculoDto
 {
-    [Required]
+    [Required(ErrorMessage = "El campo {0} es requerido.")]
+    [EnumDataType(typeof(EstadoVehiculo), ErrorMessage = "El valor del campo {0} no es válido.")]
     public EstadoVehiculo? Estado { get; set; }
 }

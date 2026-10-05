@@ -76,7 +76,11 @@ builder.Services.AddControllers()
     {
         var errores = ctx.ModelState
             .Where(e => e.Value?.Errors.Count > 0)
-            .ToDictionary(e => e.Key, e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
+            .ToDictionary(e => e.Key, e => e.Value!.Errors.Select(x =>
+                // El JSON no se pudo leer (por ejemplo, un valor que no pertenece a la lista permitida).
+                x.ErrorMessage.StartsWith("The JSON value could not be converted", StringComparison.Ordinal)
+                    ? $"El valor enviado en '{e.Key.TrimStart('$', '.')}' no es válido."
+                    : x.ErrorMessage).ToArray());
         var mensaje = string.Join(" ", errores.SelectMany(e => e.Value).Distinct());
         return new BadRequestObjectResult(new ApiError(mensaje, errores));
     });
