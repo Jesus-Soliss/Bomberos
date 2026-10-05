@@ -23,7 +23,12 @@ public class IntegrationContext : DbContext
 
         mb.Entity<OperacionPendiente>(e =>
         {
-            e.ToTable("OperacionPendiente");
+            e.ToTable("OperacionPendiente", t =>
+            {
+                t.HasCheckConstraint("CK_OperacionPendiente_Tipo",
+                    "[Tipo] IN ('CREAR_EMERGENCIA', 'ASIGNAR_BOMBERO', 'ASIGNAR_VEHICULO', 'FINALIZAR_ASIGNACION', 'REPORTE_911')");
+                t.HasCheckConstraint("CK_OperacionPendiente_Estado", "[Estado] IN ('PENDIENTE', 'APLICADA', 'RECHAZADA')");
+            });
             e.Property(x => x.UsuarioId).HasMaxLength(450).IsUnicode(false);
             e.Property(x => x.Tipo).HasMaxLength(40).IsUnicode(false);
             e.Property(x => x.Metodo).HasMaxLength(10).IsUnicode(false);
@@ -37,7 +42,11 @@ public class IntegrationContext : DbContext
 
         mb.Entity<CacheRecurso>(e =>
         {
-            e.ToTable("CacheRecurso");
+            e.ToTable("CacheRecurso", t =>
+            {
+                t.HasCheckConstraint("CK_CacheRecurso_Tipo", "[Tipo] IN ('BOMBERO', 'VEHICULO')");
+                t.HasCheckConstraint("CK_CacheRecurso_Estado", "[Estado] IN ('DISPONIBLE', 'EN_SERVICIO', 'RESERVADO', 'NO_DISPONIBLE')");
+            });
             e.Property(x => x.Tipo).HasMaxLength(10).IsUnicode(false);
             e.Property(x => x.Descripcion).HasMaxLength(150).IsUnicode(false);
             e.Property(x => x.Estado).HasMaxLength(20).IsUnicode(false);

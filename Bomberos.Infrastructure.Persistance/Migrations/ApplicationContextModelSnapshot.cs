@@ -49,7 +49,12 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UX_AsignacionBombero_Activa")
                         .HasFilter("[Estado] = 'ACTIVA'");
 
-                    b.ToTable("AsignacionBombero", (string)null);
+                    b.ToTable("AsignacionBombero", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AsignacionBombero_Estado", "[Estado] IN ('ACTIVA', 'FINALIZADA', 'CANCELADA')");
+
+                            t.HasCheckConstraint("CK_AsignacionBombero_FechaFinalizacion", "[Estado] <> 'FINALIZADA' OR [FechaFinalizacion] IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.AsignacionVehiculo", b =>
@@ -79,7 +84,12 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UX_AsignacionVehiculo_Activa")
                         .HasFilter("[Estado] = 'ACTIVA'");
 
-                    b.ToTable("AsignacionVehiculo", (string)null);
+                    b.ToTable("AsignacionVehiculo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AsignacionVehiculo_Estado", "[Estado] IN ('ACTIVA', 'FINALIZADA', 'CANCELADA')");
+
+                            t.HasCheckConstraint("CK_AsignacionVehiculo_FechaFinalizacion", "[Estado] <> 'FINALIZADA' OR [FechaFinalizacion] IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.AuditLog", b =>
@@ -123,7 +133,10 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FechaHora");
 
-                    b.ToTable("AuditLog", (string)null);
+                    b.ToTable("AuditLog", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AuditLog_Resultado", "[Resultado] IN ('EXITOSO', 'FALLIDO')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.Bombero", b =>
@@ -190,7 +203,12 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EstacionId");
 
-                    b.ToTable("Bombero", (string)null);
+                    b.ToTable("Bombero", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Bombero_Estado", "[Estado] IN ('ACTIVO', 'INACTIVO')");
+
+                            t.HasCheckConstraint("CK_Bombero_Rango", "[Rango] IN ('BOMBERO', 'CABO', 'SARGENTO', 'TENIENTE', 'CAPITAN')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.Emergencia", b =>
@@ -267,7 +285,16 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[ReferenciaExterna] IS NOT NULL");
 
-                    b.ToTable("Emergencia", (string)null);
+                    b.ToTable("Emergencia", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Emergencia_Estado", "[Estado] IN ('PENDIENTE', 'EN_ATENCION', 'CONTROLADA', 'FINALIZADA', 'CANCELADA')");
+
+                            t.HasCheckConstraint("CK_Emergencia_Origen", "[Origen] IN ('OPERADOR', 'CENTRAL_911')");
+
+                            t.HasCheckConstraint("CK_Emergencia_Prioridad", "[Prioridad] IN ('BAJA', 'MEDIA', 'ALTA', 'CRITICA')");
+
+                            t.HasCheckConstraint("CK_Emergencia_Tipo", "[Tipo] IN ('INCENDIO', 'ACCIDENTE', 'RESCATE', 'INCIDENTE_PELIGROSO', 'OTRO')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.Estacion", b =>
@@ -322,7 +349,10 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
                     b.HasIndex("Nombre")
                         .IsUnique();
 
-                    b.ToTable("Estacion", (string)null);
+                    b.ToTable("Estacion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Estacion_Estado", "[Estado] IN ('ACTIVA', 'INACTIVA')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.RequestLog", b =>
@@ -424,7 +454,12 @@ namespace Bomberos.Infrastructure.Persistence.Migrations
                     b.HasIndex("Placa")
                         .IsUnique();
 
-                    b.ToTable("Vehiculo", (string)null);
+                    b.ToTable("Vehiculo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Vehiculo_Estado", "[Estado] IN ('DISPONIBLE', 'EN_SERVICIO', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO')");
+
+                            t.HasCheckConstraint("CK_Vehiculo_Tipo", "[Tipo] IN ('CAMION', 'AMBULANCIA', 'RESCATE', 'TANQUERO')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Core.Domain.Entities.AsignacionBombero", b =>

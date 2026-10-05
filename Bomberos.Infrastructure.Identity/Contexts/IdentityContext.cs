@@ -17,6 +17,7 @@ public class IdentityContext : IdentityDbContext<ApplicationUser>
             e.Property(u => u.Nombre).HasMaxLength(50).IsUnicode(false).IsRequired();
             e.Property(u => u.Apellido).HasMaxLength(50).IsUnicode(false).IsRequired();
             e.Property(u => u.Estado).HasMaxLength(10).IsUnicode(false).IsRequired();
+            e.ToTable(t => t.HasCheckConstraint("CK_AspNetUsers_Estado", "[Estado] IN ('ACTIVO', 'INACTIVO')"));
         });
     }
 }

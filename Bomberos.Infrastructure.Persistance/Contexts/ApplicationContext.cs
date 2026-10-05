@@ -1,6 +1,7 @@
 using Bomberos.Core.Application.Interfaces.Services;
 using Bomberos.Core.Domain.Common;
 using Bomberos.Core.Domain.Entities;
+using Bomberos.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -30,7 +31,7 @@ public class ApplicationContext : DbContext
     {
         mb.Entity<Estacion>(e =>
         {
-            e.ToTable("Estacion");
+            e.ToTable("Estacion", t => t.HasCheckConstraint("CK_Estacion_Estado", ValoresDe<EstadoEstacion>("Estado")));
             e.Property(x => x.Nombre).Varchar(100);
             e.Property(x => x.Direccion).Varchar(200);
             e.Property(x => x.Telefono).Varchar(15);
@@ -40,7 +41,11 @@ public class ApplicationContext : DbContext
 
         mb.Entity<Bombero>(e =>
         {
-            e.ToTable("Bombero");
+            e.ToTable("Bombero", t =>
+            {
+                t.HasCheckConstraint("CK_Bombero_Rango", ValoresDe<RangoBombero>("Rango"));
+                t.HasCheckConstraint("CK_Bombero_Estado", ValoresDe<EstadoBombero>("Estado"));
+            });
             e.Property(x => x.Nombre).Varchar(50);
             e.Property(x => x.Apellido).Varchar(50);
             e.Property(x => x.Cedula).Varchar(15);
@@ -53,7 +58,11 @@ public class ApplicationContext : DbContext
 
         mb.Entity<Vehiculo>(e =>
         {
-            e.ToTable("Vehiculo");
+            e.ToTable("Vehiculo", t =>
+            {
+                t.HasCheckConstraint("CK_Vehiculo_Tipo", ValoresDe<TipoVehiculo>("Tipo"));
+                t.HasCheckConstraint("CK_Vehiculo_Estado", ValoresDe<EstadoVehiculo>("Estado"));
+            });
             e.Property(x => x.Placa).Varchar(10);
             e.Property(x => x.Tipo).EnumTexto(10);
             e.Property(x => x.Estado).EnumTexto(20);
@@ -64,7 +73,13 @@ public class ApplicationContext : DbContext
 
         mb.Entity<Emergencia>(e =>
         {
-            e.ToTable("Emergencia");
+            e.ToTable("Emergencia", t =>
+            {
+                t.HasCheckConstraint("CK_Emergencia_Tipo", ValoresDe<TipoEmergencia>("Tipo"));
+                t.HasCheckConstraint("CK_Emergencia_Prioridad", ValoresDe<PrioridadEmergencia>("Prioridad"));
+                t.HasCheckConstraint("CK_Emergencia_Estado", ValoresDe<EstadoEmergencia>("Estado"));
+                t.HasCheckConstraint("CK_Emergencia_Origen", ValoresDe<OrigenEmergencia>("Origen"));
+            });
             e.Property(x => x.Tipo).EnumTexto(30);
             e.Property(x => x.Descripcion).Varchar(500);
             e.Property(x => x.Direccion).Varchar(200);
@@ -78,7 +93,11 @@ public class ApplicationContext : DbContext
 
         mb.Entity<AsignacionBombero>(e =>
         {
-            e.ToTable("AsignacionBombero");
+            e.ToTable("AsignacionBombero", t =>
+            {
+                t.HasCheckConstraint("CK_AsignacionBombero_Estado", ValoresDe<EstadoAsignacion>("Estado"));
+                t.HasCheckConstraint("CK_AsignacionBombero_FechaFinalizacion", FinalizadaConFecha);   // RN-09
+            });
             e.HasKey(x => new { x.EmergenciaId, x.BomberoId });
             e.Property(x => x.Estado).EnumTexto(15);
             e.HasOne(x => x.Emergencia).WithMany(x => x.AsignacionesBomberos)
@@ -92,7 +111,11 @@ public class ApplicationContext : DbContext
 
         mb.Entity<AsignacionVehiculo>(e =>
         {
-            e.ToTable("AsignacionVehiculo");
+            e.ToTable("AsignacionVehiculo", t =>
+            {
+                t.HasCheckConstraint("CK_AsignacionVehiculo_Estado", ValoresDe<EstadoAsignacion>("Estado"));
+                t.HasCheckConstraint("CK_AsignacionVehiculo_FechaFinalizacion", FinalizadaConFecha);   // RN-09
+            });
             e.HasKey(x => new { x.EmergenciaId, x.VehiculoId });
             e.Property(x => x.Estado).EnumTexto(15);
             e.HasOne(x => x.Emergencia).WithMany(x => x.AsignacionesVehiculos)
@@ -106,7 +129,7 @@ public class ApplicationContext : DbContext
 
         mb.Entity<AuditLog>(e =>
         {
-            e.ToTable("AuditLog");
+            e.ToTable("AuditLog", t => t.HasCheckConstraint("CK_AuditLog_Resultado", ValoresDe<ResultadoAuditoria>("Resultado")));
             e.Property(x => x.UsuarioId).Varchar(450);
             e.Property(x => x.Accion).Varchar(100);
             e.Property(x => x.Entidad).Varchar(50);
@@ -131,6 +154,12 @@ public class ApplicationContext : DbContext
 
         base.OnModelCreating(mb);
     }
+
+    // Restricciones CHECK: la base de datos rechaza un valor fuera de lista aunque llegue por SQL directo.
+    private static string ValoresDe<TEnum>(string columna) where TEnum : struct, Enum
+        => $"[{columna}] IN ({string.Join(", ", Enum.GetValues<TEnum>().Select(v => $"'{v.ToTexto()}'"))})";
+
+    private const string FinalizadaConFecha = "[Estado] <> 'FINALIZADA' OR [FechaFinalizacion] IS NOT NULL";
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {

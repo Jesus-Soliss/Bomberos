@@ -59,7 +59,12 @@ namespace Bomberos.Integration.Api.Data.Migrations
                     b.HasIndex("Tipo", "ExternalId")
                         .IsUnique();
 
-                    b.ToTable("CacheRecurso", (string)null);
+                    b.ToTable("CacheRecurso", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CacheRecurso_Estado", "[Estado] IN ('DISPONIBLE', 'EN_SERVICIO', 'RESERVADO', 'NO_DISPONIBLE')");
+
+                            t.HasCheckConstraint("CK_CacheRecurso_Tipo", "[Tipo] IN ('BOMBERO', 'VEHICULO')");
+                        });
                 });
 
             modelBuilder.Entity("Bomberos.Integration.Api.Data.IntegrationLog", b =>
@@ -174,7 +179,12 @@ namespace Bomberos.Integration.Api.Data.Migrations
 
                     b.HasIndex("Estado");
 
-                    b.ToTable("OperacionPendiente", (string)null);
+                    b.ToTable("OperacionPendiente", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OperacionPendiente_Estado", "[Estado] IN ('PENDIENTE', 'APLICADA', 'RECHAZADA')");
+
+                            t.HasCheckConstraint("CK_OperacionPendiente_Tipo", "[Tipo] IN ('CREAR_EMERGENCIA', 'ASIGNAR_BOMBERO', 'ASIGNAR_VEHICULO', 'FINALIZAR_ASIGNACION', 'REPORTE_911')");
+                        });
                 });
 #pragma warning restore 612, 618
         }
