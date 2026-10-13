@@ -11,9 +11,11 @@ namespace Bomberos.WebApp.Controllers;
 [Authorize]
 public class HomeController(IntegracionApi api) : AppController
 {
-    /// <summary>Dashboard: el mismo para los tres roles; el menú cambia según el perfil.</summary>
+    /// <summary>Dashboard: el mismo para el personal; el menú cambia según el perfil. El cliente va directo a registrar.</summary>
     public async Task<IActionResult> Index()
     {
+        if (User.EsCliente()) return RedirectToAction("Crear", "Emergencias");
+
         var r = await api.GetAsync<DashboardDto>("api/v1/dashboard");
         if (!r.Ok) ViewData["Error"] = r.Message;
         return View(r.Data);

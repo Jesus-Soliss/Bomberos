@@ -1,4 +1,5 @@
 using Bomberos.Core.Application;
+using Bomberos.Core.Application.Common;
 using Bomberos.WebApp.Infrastructure;
 using Bomberos.WebApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -39,7 +40,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.Cookie.Name = "Bomberos.Sesion";
         o.Cookie.HttpOnly = true;
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o => o.AddPolicy(Politicas.Personal,
+    p => p.RequireAuthenticatedUser().RequireAssertion(c => !c.User.IsInRole(Roles.Cliente))));
 
 var app = builder.Build();
 

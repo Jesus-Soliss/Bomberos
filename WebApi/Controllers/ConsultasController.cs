@@ -9,7 +9,7 @@ namespace Bomberos.WebApi.Controllers;
 
 [ApiController]
 [Route("api/v1")]
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class ConsultasController(IConsultaService consultas, IAsignacionService asignaciones) : ControllerBase
 {
     [HttpGet("dashboard")]

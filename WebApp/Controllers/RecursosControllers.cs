@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Bomberos.WebApp.Controllers;
 
-// Listados: cualquier usuario autenticado (Consulta los ve en solo lectura). Formularios: Administrador.
+// Listados: personal del sistema (Consulta los ve en solo lectura; Cliente no entra). Formularios: Administrador.
 
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class EstacionesController(IntegracionApi api, IMapper mapper) : AppController
 {
     private const string Ruta = "api/v1/estaciones";
@@ -63,7 +63,7 @@ public class EstacionesController(IntegracionApi api, IMapper mapper) : AppContr
     }
 }
 
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class BomberosController(IntegracionApi api, IMapper mapper) : AppController
 {
     private const string Ruta = "api/v1/bomberos";
@@ -119,7 +119,7 @@ public class BomberosController(IntegracionApi api, IMapper mapper) : AppControl
     }
 }
 
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class VehiculosController(IntegracionApi api, IMapper mapper) : AppController
 {
     private const string Ruta = "api/v1/vehiculos";

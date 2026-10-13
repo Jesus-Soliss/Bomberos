@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bomberos.WebApi.Controllers;
 
-// Lectura: cualquier usuario autenticado. Escritura y asignaciones: ADMINISTRADOR y OPERADOR.
+// Lectura: personal del sistema (cualquier perfil menos CLIENTE). Escritura y asignaciones: ADMINISTRADOR y OPERADOR.
+// Registrar una emergencia: también CLIENTE, que no tiene acceso a nada más.
 [ApiController]
 [Route("api/v1/emergencias")]
 [Authorize]
@@ -15,20 +16,23 @@ public class EmergenciasController(IEmergenciaService emergencias, IAsignacionSe
 {
     /// <summary>Filtros opcionales: estado, tipo, prioridad, origen, desde, hasta.</summary>
     [HttpGet]
+    [Authorize(Policy = Politicas.Personal)]
     public async Task<ActionResult<List<EmergenciaDto>>> Buscar([FromQuery] EmergenciaFiltroDto filtro)
         => Ok(await emergencias.BuscarAsync(filtro));
 
     /// <summary>Detalle con el historial de asignaciones (activas y cerradas).</summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = Politicas.Personal)]
     public async Task<ActionResult<EmergenciaDetalleDto>> GetById(int id) => Ok(await emergencias.GetDetalleAsync(id));
 
     /// <summary>Consulta por la referencia del Centro 911.</summary>
     [HttpGet("externa/{referencia}")]
+    [Authorize(Policy = Politicas.Personal)]
     public async Task<ActionResult<EmergenciaDto>> GetPorReferencia(string referencia)
         => Ok(await emergencias.GetPorReferenciaAsync(referencia));
 
     [HttpPost]
-    [Authorize(Roles = Roles.AdministradorOperador)]
+    [Authorize(Roles = Roles.RegistranEmergencias)]
     public async Task<ActionResult<EmergenciaDto>> Crear(GuardarEmergenciaDto dto)
     {
         var creada = await emergencias.CrearAsync(dto);

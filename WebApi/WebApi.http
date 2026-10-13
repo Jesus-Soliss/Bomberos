@@ -7,6 +7,12 @@ Content-Type: application/json
 
 { "username": "admin", "password": "Admin123*" }
 
+### Registro público: crea un usuario con el perfil CLIENTE (solo puede registrar emergencias)
+POST {{WebApi_HostAddress}}/api/v1/auth/registro
+Content-Type: application/json
+
+{ "username": "jperez", "email": "jperez@correo.com", "nombre": "Juan", "apellido": "Pérez", "password": "Cliente123*" }
+
 ###
 @token = {{login.response.body.token}}
 

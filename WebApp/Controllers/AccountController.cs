@@ -60,6 +60,23 @@ public class AccountController(IntegracionApi api, IMapper mapper) : AppControll
         return Url.IsLocalUrl(vm.ReturnUrl) ? Redirect(vm.ReturnUrl!) : RedirectToAction("Index", "Home");
     }
 
+    [HttpGet, AllowAnonymous]
+    public IActionResult Registro()
+        => User.Identity?.IsAuthenticated == true ? RedirectToAction("Index", "Home") : View(new RegistroViewModel());
+
+    /// <summary>Registro público: la cuenta siempre queda con el perfil Cliente (lo decide CORE).</summary>
+    [HttpPost, AllowAnonymous]
+    public async Task<IActionResult> Registro(RegistroViewModel vm)
+    {
+        if (!ModelState.IsValid) return View(vm);
+
+        var r = await api.SendAsync<object>(HttpMethod.Post, "api/v1/auth/registro", mapper.Map<RegistroClienteDto>(vm), anonimo: true);
+        if (!Validar(r)) return View(vm);
+
+        Exito("Cuenta creada. Inicie sesión para registrar una emergencia.");
+        return RedirectToAction(nameof(Login));
+    }
+
     [HttpPost, Authorize]
     public async Task<IActionResult> Logout()
     {

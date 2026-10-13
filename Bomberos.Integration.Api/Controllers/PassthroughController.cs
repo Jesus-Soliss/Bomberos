@@ -48,4 +48,20 @@ public class AuthController(ICoreClient core) : ControllerBase
 
         return new ContentResult { StatusCode = r.StatusCode, Content = r.Body, ContentType = "application/json" };
     }
+
+    /// <summary>Registro público de clientes. Requiere CORE: las cuentas solo se crean allí.</summary>
+    [HttpPost("registro")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Registro([FromBody] JsonElement datos)
+    {
+        var r = await core.SendAsync(HttpMethod.Post, "api/v1/auth/registro", datos.GetRawText(), null);
+        if (!r.Disponible)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                success = false,
+                message = "El sistema central no está disponible; no se pueden crear cuentas en este momento."
+            });
+
+        return new ContentResult { StatusCode = r.StatusCode, Content = r.Body, ContentType = "application/json" };
+    }
 }

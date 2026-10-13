@@ -17,7 +17,7 @@ public record RecursoDisponible(int Id, string Descripcion, string Estado);
 /// </summary>
 [ApiController]
 [Route("api/v1")]
-[Authorize]
+[Authorize(Policy = "Personal")]
 public class DisponibilidadController(ICoreClient core, IntegrationContext db) : ControllerBase
 {
     [HttpGet("bomberos/disponibles")]

@@ -11,12 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bomberos.WebApp.Controllers;
 
-// Listado y detalle: cualquier usuario autenticado. Registro, estados y asignaciones: Administrador y Operador.
+// Listado y detalle: personal del sistema. Estados y asignaciones: Administrador y Operador.
+// Registro: también Cliente, que solo ve el formulario.
 [Authorize]
 public class EmergenciasController(IntegracionApi api, IMapper mapper) : AppController
 {
     private const string Ruta = "api/v1/emergencias";
 
+    [Authorize(Policy = Politicas.Personal)]
     public async Task<IActionResult> Index(EmergenciaFiltroViewModel filtro)
     {
         var r = await api.GetAsync<List<EmergenciaDto>>(Ruta + QueryDe(filtro));
@@ -29,6 +31,7 @@ public class EmergenciasController(IntegracionApi api, IMapper mapper) : AppCont
         });
     }
 
+    [Authorize(Policy = Politicas.Personal)]
     public async Task<IActionResult> Detalle(int id)
     {
         var r = await api.GetAsync<EmergenciaDetalleDto>($"{Ruta}/{id}");
@@ -51,16 +54,24 @@ public class EmergenciasController(IntegracionApi api, IMapper mapper) : AppCont
         return View(vm);
     }
 
-    [Authorize(Roles = Roles.AdministradorOperador)]
+    [Authorize(Roles = Roles.RegistranEmergencias)]
     public IActionResult Crear() => View("Form", new EmergenciaViewModel());
 
-    [HttpPost, Authorize(Roles = Roles.AdministradorOperador)]
+    [HttpPost, Authorize(Roles = Roles.RegistranEmergencias)]
     public async Task<IActionResult> Crear(EmergenciaViewModel vm)
     {
         if (!ModelState.IsValid) return View("Form", vm);
 
         var r = await api.SendAsync<EmergenciaDto>(HttpMethod.Post, Ruta, mapper.Map<GuardarEmergenciaDto>(vm));
         if (!Validar(r)) return View("Form", vm);
+
+        // El cliente no tiene listado ni detalle: vuelve al formulario con el resultado.
+        if (User.EsCliente())
+        {
+            if (r.Pendiente) Aviso(r.Message!);
+            else Exito($"Emergencia N.º {r.Data!.Id} registrada. El personal de bomberos ya puede verla y atenderla.");
+            return RedirectToAction(nameof(Crear));
+        }
 
         if (r.Pendiente)   // CORE caído: quedó en cola
         {

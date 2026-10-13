@@ -78,7 +78,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         }
     };
 });
-builder.Services.AddAuthorization();
+// Personal del sistema: cualquier usuario autenticado que no sea CLIENTE.
+builder.Services.AddAuthorization(o => o.AddPolicy("Personal",
+    p => p.RequireAuthenticatedUser().RequireAssertion(c => !c.User.IsInRole("CLIENTE"))));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

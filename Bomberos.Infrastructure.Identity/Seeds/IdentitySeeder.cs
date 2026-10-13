@@ -20,6 +20,7 @@ public static class IdentitySeeder
         await CrearUsuario(users, "admin", "Admin", "Sistema", Roles.Administrador, "Admin123*");
         await CrearUsuario(users, "operador", "Operador", "Demo", Roles.Operador, "Operador123*");
         await CrearUsuario(users, "consulta", "Consulta", "Demo", Roles.Consulta, "Consulta123*");
+        await CrearUsuario(users, "cliente", "Cliente", "Demo", Roles.Cliente, "Cliente123*");
         // Cuenta de servicio que usa Integration.Api para sincronizar.
         await CrearUsuario(users, "svc.integracion", "Servicio", "Integracion", Roles.Operador, "Svc.Integr4cion*");
     }

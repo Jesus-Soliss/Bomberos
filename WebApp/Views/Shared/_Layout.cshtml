@@ -26,6 +26,13 @@
                     </button>
                     <div class="collapse navbar-collapse" id="menu">
                         <ul class="navbar-nav me-auto">
+                            @if (User.EsCliente())
+                            {
+                                <li class="nav-item"><a class="nav-link active" asp-controller="Emergencias" asp-action="Crear">Registrar emergencia</a></li>
+                            }
+                            else
+                            {
+                                <text>
                             <li class="nav-item"><a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link @Activo("Emergencias")" asp-controller="Emergencias" asp-action="Index">Emergencias</a></li>
                             @if (User.PuedeOperar())
@@ -48,6 +55,8 @@
                                         <li><a class="dropdown-item" asp-controller="Auditoria" asp-action="Pendientes">Operaciones pendientes</a></li>
                                     </ul>
                                 </li>
+                            }
+                                </text>
                             }
                         </ul>
                         <div class="d-flex align-items-center gap-3">

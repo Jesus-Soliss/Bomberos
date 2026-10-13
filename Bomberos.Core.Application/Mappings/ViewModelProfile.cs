@@ -13,6 +13,7 @@ public class ViewModelProfile : Profile
     public ViewModelProfile()
     {
         CreateMap<LoginViewModel, AuthRequest>();
+        CreateMap<RegistroViewModel, RegistroClienteDto>();
 
         CreateMap<UsuarioCrearViewModel, CrearUsuarioDto>();
         CreateMap<UsuarioEditarViewModel, EditarUsuarioDto>();

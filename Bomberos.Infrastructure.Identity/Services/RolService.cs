@@ -62,7 +62,7 @@ public class RolService(RoleManager<IdentityRole> roleManager, IdentityContext c
 
     private Task<int> ContarUsuariosAsync(string rolId) => context.UserRoles.CountAsync(ur => ur.RoleId == rolId);
 
-    // Los permisos del sistema dependen de los tres perfiles base.
+    // Los permisos del sistema dependen de los perfiles base.
     private static void ValidarNoEsBase(IdentityRole rol)
     {
         if (Roles.Base.Contains(rol.Name))

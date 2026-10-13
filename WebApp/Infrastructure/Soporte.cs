@@ -63,6 +63,8 @@ public static class UsuarioExtensions
     public static bool EsAdministrador(this ClaimsPrincipal user) => user.IsInRole(Roles.Administrador);
     /// <summary>Administrador u operador: puede gestionar emergencias y asignaciones.</summary>
     public static bool PuedeOperar(this ClaimsPrincipal user) => user.IsInRole(Roles.Administrador) || user.IsInRole(Roles.Operador);
+    /// <summary>Cliente: solo puede registrar emergencias.</summary>
+    public static bool EsCliente(this ClaimsPrincipal user) => user.IsInRole(Roles.Cliente);
     public static string NombreCompleto(this ClaimsPrincipal user) => user.FindFirst("nombre")?.Value ?? user.Identity?.Name ?? "";
     public static string RolPrincipal(this ClaimsPrincipal user) => user.FindFirst("role")?.Value ?? "";
 }

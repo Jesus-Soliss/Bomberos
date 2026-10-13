@@ -1,4 +1,5 @@
 using Bomberos.Core.Application.Common;
+using Bomberos.Core.Application.DTOs.Auth;
 using Bomberos.Core.Application.DTOs.Usuarios;
 using Bomberos.Core.Application.Exceptions;
 using Bomberos.Core.Application.Interfaces.Services;
@@ -32,25 +33,33 @@ public class UsuarioService(
 
     public async Task<UsuarioDto> GetByIdAsync(string id) => await ADtoAsync(await ObtenerAsync(id));
 
-    public Task<UsuarioDto> CrearAsync(CrearUsuarioDto dto) => audit.AuditarAsync($"CREAR_USUARIO:{dto.Username.Trim()}", Entidad, null, async () =>
+    public Task<UsuarioDto> CrearAsync(CrearUsuarioDto dto) => audit.AuditarAsync($"CREAR_USUARIO:{dto.Username.Trim()}", Entidad, null,
+        () => CrearConRolAsync(dto.Username, dto.Email, dto.Nombre, dto.Apellido, dto.Password, dto.Rol));
+
+    // El perfil no viaja en la petición: quien se registra por su cuenta siempre queda como CLIENTE.
+    public Task<UsuarioDto> RegistrarClienteAsync(RegistroClienteDto dto) => audit.AuditarAsync($"REGISTRAR_CLIENTE:{dto.Username.Trim()}", Entidad, null,
+        () => CrearConRolAsync(dto.Username, dto.Email, dto.Nombre, dto.Apellido, dto.Password, Roles.Cliente));
+
+    private async Task<UsuarioDto> CrearConRolAsync(string username, string email, string nombre, string apellido,
+        string password, string nombreRol)
     {
-        var rol = await ObtenerRolAsync(dto.Rol);
+        var rol = await ObtenerRolAsync(nombreRol);
 
         var user = new ApplicationUser
         {
-            UserName = dto.Username.Trim(),
-            Email = dto.Email.Trim(),
-            Nombre = dto.Nombre.Trim(),
-            Apellido = dto.Apellido.Trim(),
+            UserName = username.Trim(),
+            Email = email.Trim(),
+            Nombre = nombre.Trim(),
+            Apellido = apellido.Trim(),
             Estado = EstadosUsuario.Activo,
             EmailConfirmed = true
         };
 
         // RN-13 y RN-22 las valida Identity (usuario único y política de contraseñas).
-        Verificar(await userManager.CreateAsync(user, dto.Password));
+        Verificar(await userManager.CreateAsync(user, password));
         Verificar(await userManager.AddToRoleAsync(user, rol));
         return ADto(user, rol);
-    });
+    }
 
     public async Task<UsuarioDto> EditarAsync(string id, EditarUsuarioDto dto)
     {

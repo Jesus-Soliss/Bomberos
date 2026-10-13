@@ -35,11 +35,12 @@
     </div>
     <div class="col-12">
         <button type="submit" class="btn btn-danger">@(nueva ? "Registrar emergencia" : "Guardar cambios")</button>
-        @if (nueva)
+        @* El cliente no tiene listado al que volver. *@
+        @if (nueva && !User.EsCliente())
         {
             <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
         }
-        else
+        else if (!nueva)
         {
             <a class="btn btn-outline-secondary" asp-action="Detalle" asp-route-id="@Model.Id">Cancelar</a>
         }

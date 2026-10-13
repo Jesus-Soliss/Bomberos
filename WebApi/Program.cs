@@ -68,7 +68,8 @@ builder.Services.AddAuthentication(o =>
         }
     };
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o => o.AddPolicy(Politicas.Personal,
+    p => p.RequireAuthenticatedUser().RequireAssertion(c => !c.User.IsInRole(Roles.Cliente))));
 
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(ApiJson.EnumConverter()))

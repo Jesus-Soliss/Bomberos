@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bomberos.WebApi.Controllers;
 
-// Lectura: cualquier usuario autenticado. Escritura: ADMINISTRADOR.
+// Lectura: personal del sistema (cualquier perfil menos CLIENTE). Escritura: ADMINISTRADOR.
 
 [ApiController]
 [Route("api/v1/estaciones")]
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class EstacionesController(IEstacionService estaciones) : ControllerBase
 {
     [HttpGet]
@@ -40,7 +40,7 @@ public class EstacionesController(IEstacionService estaciones) : ControllerBase
 
 [ApiController]
 [Route("api/v1/bomberos")]
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class BomberosController(IBomberoService bomberos) : ControllerBase
 {
     [HttpGet]
@@ -74,7 +74,7 @@ public class BomberosController(IBomberoService bomberos) : ControllerBase
 
 [ApiController]
 [Route("api/v1/vehiculos")]
-[Authorize]
+[Authorize(Policy = Politicas.Personal)]
 public class VehiculosController(IVehiculoService vehiculos) : ControllerBase
 {
     [HttpGet]

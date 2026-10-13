@@ -14,15 +14,18 @@ namespace Bomberos.Integration.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/emergencias")]
-[Authorize(Roles = "ADMINISTRADOR,OPERADOR")]
+[Authorize]
 public class EmergenciasController(
     IOperacionService operaciones,
     ISyncService sync,
     ICoreClient core,
     ICliente911 cliente911) : ControllerBase
 {
-    /// <summary>Registra una emergencia. Con CORE caído responde 202 y queda pendiente.</summary>
+    private const string Operadores = "ADMINISTRADOR,OPERADOR";
+
+    /// <summary>Registra una emergencia (también el CLIENTE). Con CORE caído responde 202 y queda pendiente.</summary>
     [HttpPost]
+    [Authorize(Roles = Operadores + ",CLIENTE")]
     public async Task<IActionResult> Crear([FromBody] JsonElement emergencia)
     {
         // Solo se reenvían (o encolan) los cuatro campos conocidos, ya validados y normalizados.
@@ -48,6 +51,7 @@ public class EmergenciasController(
     /// Cambia el estado de una emergencia (requiere CORE). Si la emergencia vino del Centro 911, le avisa el cambio.
     /// </summary>
     [HttpPatch("{id:int}/estado")]
+    [Authorize(Roles = Operadores)]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] JsonElement cambio)
     {
         var r = await core.SendAsync(HttpMethod.Patch, $"api/v1/emergencias/{id}/estado", cambio.GetRawText(), HttpContext.Bearer());
@@ -67,6 +71,7 @@ public class EmergenciasController(
     }
 
     [HttpPost("{id:int}/bomberos")]
+    [Authorize(Roles = Operadores)]
     public async Task<IActionResult> AsignarBombero(int id, [FromBody] JsonElement asignacion)
     {
         if (!TryGetId(asignacion, "bomberoId", out var bomberoId))
@@ -79,6 +84,7 @@ public class EmergenciasController(
     }
 
     [HttpPost("{id:int}/vehiculos")]
+    [Authorize(Roles = Operadores)]
     public async Task<IActionResult> AsignarVehiculo(int id, [FromBody] JsonElement asignacion)
     {
         if (!TryGetId(asignacion, "vehiculoId", out var vehiculoId))
@@ -92,6 +98,7 @@ public class EmergenciasController(
 
     /// <summary>Finaliza o cancela la asignación de un bombero.</summary>
     [HttpPatch("{id:int}/bomberos/{bomberoId:int}/{accion:regex(^(finalizar|cancelar)$)}")]
+    [Authorize(Roles = Operadores)]
     public async Task<IActionResult> CerrarBombero(int id, int bomberoId, string accion)
     {
         var r = await operaciones.EjecutarOEncolarAsync(HttpContext, TiposOperacion.FinalizarAsignacion, HttpMethod.Patch,
@@ -102,6 +109,7 @@ public class EmergenciasController(
 
     /// <summary>Finaliza o cancela la asignación de un vehículo.</summary>
     [HttpPatch("{id:int}/vehiculos/{vehiculoId:int}/{accion:regex(^(finalizar|cancelar)$)}")]
+    [Authorize(Roles = Operadores)]
     public async Task<IActionResult> CerrarVehiculo(int id, int vehiculoId, string accion)
     {
         var r = await operaciones.EjecutarOEncolarAsync(HttpContext, TiposOperacion.FinalizarAsignacion, HttpMethod.Patch,

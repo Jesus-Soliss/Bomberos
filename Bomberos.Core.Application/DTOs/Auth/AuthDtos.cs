@@ -11,6 +11,25 @@ public class AuthRequest
     public string Password { get; set; } = "";
 }
 
+/// <summary>Registro público: el usuario siempre queda con el perfil CLIENTE.</summary>
+public class RegistroClienteDto
+{
+    [Required, StringLength(50)]
+    public string Username { get; set; } = "";
+
+    [Required, EmailAddress, StringLength(100)]
+    public string Email { get; set; } = "";
+
+    [Required, StringLength(50)]
+    public string Nombre { get; set; } = "";
+
+    [Required, StringLength(50)]
+    public string Apellido { get; set; } = "";
+
+    [Required]
+    public string Password { get; set; } = "";
+}
+
 public class AuthResponse
 {
     public bool Success { get; set; }

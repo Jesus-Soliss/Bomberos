@@ -32,6 +32,8 @@ public interface IUsuarioService
     Task<List<UsuarioDto>> GetAllAsync();
     Task<UsuarioDto> GetByIdAsync(string id);
     Task<UsuarioDto> CrearAsync(CrearUsuarioDto dto);
+    /// <summary>Registro público: crea el usuario con el perfil CLIENTE.</summary>
+    Task<UsuarioDto> RegistrarClienteAsync(RegistroClienteDto dto);
     Task<UsuarioDto> EditarAsync(string id, EditarUsuarioDto dto);
     Task<UsuarioDto> CambiarEstadoAsync(string id, string estado);
     Task<UsuarioDto> CambiarRolAsync(string id, string rol);

@@ -26,6 +26,36 @@ public class LoginViewModel
     public string? ReturnUrl { get; set; }
 }
 
+public class RegistroViewModel
+{
+    [Display(Name = "Usuario")]
+    [Required(ErrorMessage = Validacion.Requerido), StringLength(50, ErrorMessage = Validacion.Longitud)]
+    public string Username { get; set; } = "";
+
+    [Display(Name = "Correo")]
+    [Required(ErrorMessage = Validacion.Requerido), StringLength(100, ErrorMessage = Validacion.Longitud)]
+    [EmailAddress(ErrorMessage = "El correo no tiene un formato válido.")]
+    public string Email { get; set; } = "";
+
+    [Display(Name = "Nombre")]
+    [Required(ErrorMessage = Validacion.Requerido), StringLength(50, ErrorMessage = Validacion.Longitud)]
+    public string Nombre { get; set; } = "";
+
+    [Display(Name = "Apellido")]
+    [Required(ErrorMessage = Validacion.Requerido), StringLength(50, ErrorMessage = Validacion.Longitud)]
+    public string Apellido { get; set; } = "";
+
+    [Display(Name = "Contraseña")]
+    [Required(ErrorMessage = Validacion.Requerido), DataType(DataType.Password)]
+    [RegularExpression(Validacion.PatronPassword, ErrorMessage = Validacion.MensajePassword)]
+    public string Password { get; set; } = "";
+
+    [Display(Name = "Confirmar contraseña")]
+    [Required(ErrorMessage = Validacion.Requerido), DataType(DataType.Password)]
+    [Compare(nameof(Password), ErrorMessage = "Las contraseñas no coinciden.")]
+    public string ConfirmarPassword { get; set; } = "";
+}
+
 public class UsuarioCrearViewModel
 {
     [Display(Name = "Usuario")]
